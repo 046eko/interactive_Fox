@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Климатический тренажёр — Проект или пустышка? (v2)</title>
+    <style>
+        :root {
+            --teal-950: #002e24;
+            --teal-900: #003d2e;
+            --teal-800: #004d3a;
+            --teal-700: #005a48;
+            --teal-650: #006b54;
+            --teal-600: #007760;
+            --teal-500: #008a6e;
+            --teal-400: #009e7d;
+            --teal-350: #00b38e;
+            --teal-300: #00c9a0;
+            --teal-200: #4ddbbf;
+            --teal-150: #8ae8d4;
+            --teal-100: #b5f0e3;
+            --teal-75: #d4f6ee;
+            --teal-50: #e6f9f4;
+            --teal-25: #f2fbf8;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --amber-light: #fef3c7;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --amber-700: #b45309;
+            --red-50: #fef2f2;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --green-50: #f0fdf4;
+            --green-500: #22c55e;
+            --green-600: #16a34a;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Белый фон страницы */
+        body {
+            font-family: var(--font-sans);
+            background: #ffffff;
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Ресайзер-рамка */
+        .resizable-frame {
+            position: relative;
+            width: min(100%, 700px);
+            height: min(600px, 90vh);
+            max-width: 700px;
+            max-height: 600px;
+            min-width: 320px;
+            min-height: 300px;
+            overflow: auto;
+            resize: both; /* нативный ресайз в поддерживаемых браузерах */
+            border: 1px solid var(--teal-200);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            background: transparent;
+        }
+        /* Видимая ручка для кросс-браузерного ресайза */
+        .resizer-handle {
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            width: 16px;
+            height: 16px;
+            cursor: se-resize;
+            border-radius: 3px;
+            background:
+              linear-gradient(135deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.12) 50%) 0 0/8px 8px,
+              linear-gradient(135deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.18) 50%) 4px 4px/8px 8px;
+            pointer-events: auto;
+            opacity: 0.6;
+        }
+        .resizer-handle:hover { opacity: 0.9; }
+
+        .main-wrapper {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 32px 24px 20px;
+            position: relative;
+        }
+        .header-badge {
+            display: inline-block;
+            background: var(--teal-600);
+            color: var(--white);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            color: var(--teal-900);
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .header .subtitle {
+            font-size: 1rem;
+            color: var(--gray-500);
+            max-width: 550px;
+            margin: 0 auto;
+            font-weight: 500;
+        }
+
+        /* ─── PROGRESS BAR ────────────────────────── */
+        .progress-panel {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--teal-100);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .progress-label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--teal-700);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .dots-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            border: 3px solid var(--gray-300);
+            transition: all var(--transition);
+            position: relative;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: transparent;
+        }
+        .dot::after {
+            content: attr(data-num);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--gray-400);
+            transition: color var(--transition);
+        }
+
+        /* Dot states via :has() */
+        body:has(#card1-fake:checked) .dot-1 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card1-fake:checked) .dot-1::after { color: var(--white); }
+        body:has(#card1-project:checked) .dot-1 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card1-project:checked) .dot-1::after { color: #c0392b; }
+
+        body:has(#card2-fake:checked) .dot-2 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card2-fake:checked) .dot-2::after { color: var(--white); }
+        body:has(#card2-project:checked) .dot-2 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card2-project:checked) .dot-2::after { color: #c0392b; }
+
+        body:has(#card3-project:checked) .dot-3 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card3-project:checked) .dot-3::after { color: var(--white); }
+        body:has(#card3-fake:checked) .dot-3 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card3-fake:checked) .dot-3::after { color: #c0392b; }
+
+        body:has(#card4-fake:checked) .dot-4 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card4-fake:checked) .dot-4::after { color: var(--white); }
+        body:has(#card4-project:checked) .dot-4 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card4-project:checked) .dot-4::after { color: #c0392b; }
+
+        body:has(#card5-project:checked) .dot-5 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card5-project:checked) .dot-5::after { color: var(--white); }
+        body:has(#card5-fake:checked) .dot-5 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card5-fake:checked) .dot-5::after { color: #c0392b; }
+
+        body:has(#card6-fake:checked) .dot-6 { background: var(--teal-400); border-color: var(--teal-600); box-shadow: 0 0 0 4px rgba(0,119,96,0.12); }
+        body:has(#card6-fake:checked) .dot-6::after { color: var(--white); }
+        body:has(#card6-project:checked) .dot-6 { background: #fde8e8; border-color: #e5a0a0; }
+        body:has(#card6-project:checked) .dot-6::after { color: #c0392b; }
+
+        .dot-legend {
+            display: flex;
+            gap: 14px;
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .dot-legend span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .legend-dot.correct { background: var(--teal-400); }
+        .legend-dot.wrong { background: #e5a0a0; }
+
+        /* ─── CARDS GRID ──────────────────────────── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 700px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .progress-panel { justify-content: center; }
+            .dot-legend { margin-left: 0; width: 100%; justify-content: center; margin-top: 6px; }
+        }
+
+        /* ─── CARD ────────────────────────────────── */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--teal-200);
+        }
+        .card-inner {
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+        }
+        .card-number {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--teal-300);
+            letter-spacing: 0.06em;
+        }
+        .card-scenario {
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            line-height: 1.55;
+            font-weight: 500;
+            padding-right: 32px;
+        }
+        .card-scenario .highlight {
+            color: var(--teal-700);
+            font-weight: 700;
+        }
+
+        /* ─── CHOICES ─────────────────────────────── */
+        .choices-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .choices-row input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            height: 0;
+        }
+        .choice-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 22px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+            border: 2px solid var(--gray-300);
+            background: var(--white);
+            color: var(--gray-600);
+            letter-spacing: 0.02em;
+            min-width: 110px;
+            text-align: center;
+        }
+        .choice-label:hover {
+            border-color: var(--teal-400);
+            color: var(--teal-700);
+            background: var(--teal-25);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        .choice-label:active { transform: scale(0.97); transition: transform 0.1s ease; }
+
+        /* Radio checked styles */
+        input[type="radio"].radio-project:checked + .choice-label-project {
+            background: var(--teal-600);
+            border-color: var(--teal-600);
+            color: var(--white);
+            box-shadow: 0 2px 8px rgba(0,119,96,0.35);
+        }
+        input[type="radio"].radio-fake:checked + .choice-label-fake {
+            background: var(--teal-800);
+            border-color: var(--teal-800);
+            color: var(--white);
+            box-shadow: 0 2px 8px rgba(0,77,58,0.4);
+        }
+
+        /* Dim unselected when one is chosen */
+        input[type="radio"].radio-project:checked ~ .choice-label-fake,
+        input[type="radio"].radio-fake:checked ~ .choice-label-project {
+            opacity: 0.45;
+            border-color: var(--gray-200);
+            color: var(--gray-400);
+            background: var(--gray-50);
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Lock choices after selection */
+        .card:has(input[type="radio"]:checked) .choice-label {
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.75;
+        }
+        .card:has(input[type="radio"]:checked) input[type="radio"]:checked + .choice-label {
+            opacity: 1;
+        }
+        .card:has(input[type="radio"]:checked) input[type="radio"] {
+            pointer-events: none;
+        }
+
+        /* ─── REVEAL BUTTON ─────────────────────── */
+        .reveal-checkbox {
+            position: absolute;
+            opacity: 0;
+        }
+        .reveal-btn {
+            display: none; /* hidden until a radio is checked */
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: var(--teal-25);
+            border: 2px solid var(--teal-200);
+            color: var(--teal-700);
+            cursor: pointer;
+            transition: all var(--transition);
+            text-align: center;
+            margin-top: 4px;
+            user-select: none;
+        }
+        .reveal-btn:hover {
+            background: var(--teal-100);
+            border-color: var(--teal-400);
+            color: var(--teal-800);
+        }
+        .card:has(input[type="radio"]:checked) .reveal-btn {
+            display: inline-flex;
+        }
+
+        /* ─── FEEDBACK BOXES ──────────────────────── */
+        .feedback {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            padding: 0 16px;
+            margin: 0;
+            border-radius: var(--radius);
+            transition: max-height var(--transition-slow), opacity var(--transition-slow), padding var(--transition-slow), margin var(--transition-slow), border var(--transition-slow);
+            font-size: 0.85rem;
+            line-height: 1.55;
+            border: 2px solid transparent;
+            pointer-events: none;
+        }
+        .feedback-correct {
+            background: #e6f9f4;
+            border-color: #b5f0e3;
+            color: #003d2e;
+        }
+        .feedback-incorrect {
+            background: #fef9f4;
+            border-color: #f5dfc8;
+            color: #5c3d1a;
+        }
+        .feedback-icon {
+            font-size: 1.3rem;
+            margin-right: 6px;
+            vertical-align: -2px;
+        }
+        .feedback strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* ─── FEEDBACK VISIBILITY (через :has) ───────── */
+        /* Card 1 – правильный ответ: fake */
+        .card-inner:has(#card1-fake:checked) #reveal-card1:checked ~ .feedback-correct-card1,
+        .card-inner:has(#card1-project:checked) #reveal-card1:checked ~ .feedback-incorrect-card1 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* Card 2 – правильный ответ: fake */
+        .card-inner:has(#card2-fake:checked) #reveal-card2:checked ~ .feedback-correct-card2,
+        .card-inner:has(#card2-project:checked) #reveal-card2:checked ~ .feedback-incorrect-card2 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* Card 3 – правильный ответ: project */
+        .card-inner:has(#card3-project:checked) #reveal-card3:checked ~ .feedback-correct-card3,
+        .card-inner:has(#card3-fake:checked) #reveal-card3:checked ~ .feedback-incorrect-card3 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* Card 4 – правильный ответ: fake */
+        .card-inner:has(#card4-fake:checked) #reveal-card4:checked ~ .feedback-correct-card4,
+        .card-inner:has(#card4-project:checked) #reveal-card4:checked ~ .feedback-incorrect-card4 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* Card 5 – правильный ответ: project */
+        .card-inner:has(#card5-project:checked) #reveal-card5:checked ~ .feedback-correct-card5,
+        .card-inner:has(#card5-fake:checked) #reveal-card5:checked ~ .feedback-incorrect-card5 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* Card 6 – правильный ответ: fake */
+        .card-inner:has(#card6-fake:checked) #reveal-card6:checked ~ .feedback-correct-card6,
+        .card-inner:has(#card6-project:checked) #reveal-card6:checked ~ .feedback-incorrect-card6 {
+            max-height: 280px; opacity: 1; padding: 14px 16px; margin: 6px 0 4px; pointer-events: auto;
+        }
+
+        /* ─── RESET BUTTON ────────────────────────── */
+        .reset-section {
+            text-align: center;
+            padding: 8px 0;
+        }
+        .reset-btn {
+            display: inline-block;
+            padding: 10px 28px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: var(--white);
+            border: 2px solid var(--gray-300);
+            color: var(--gray-600);
+            transition: all var(--transition);
+            letter-spacing: 0.03em;
+            text-decoration: none;
+        }
+        .reset-btn:hover {
+            border-color: var(--teal-500);
+            color: var(--teal-700);
+            background: var(--teal-25);
+            box-shadow: var(--shadow-md);
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--gray-400);
+            padding: 0 0 28px;
+            line-height: 1.5;
+        }
+        .footer-note a {
+            color: var(--teal-600);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-note a:hover { text-decoration: underline; }
+
+        input[type="radio"]:focus-visible + .choice-label {
+            outline: 3px solid var(--teal-300);
+            outline-offset: 3px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        .card:nth-child(1) { animation-delay: 0s; }
+        .card:nth-child(2) { animation-delay: 0.06s; }
+        .card:nth-child(3) { animation-delay: 0.12s; }
+        .card:nth-child(4) { animation-delay: 0.18s; }
+        .card:nth-child(5) { animation-delay: 0.24s; }
+        .card:nth-child(6) { animation-delay: 0.3s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card { animation: none; }
+            .feedback { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ресайзируемая рамка -->
+    <div id="app-resizer" class="resizable-frame" aria-label="Ресайзируемая область тренажёра">
+        <div class="main-wrapper">
+
+            <header class="header">
+                <h1>Климатический проект или пустышка?</h1>
+                <p class="subtitle">
+                    Научитесь отличать настоящие климатические проекты от гринвошинга.
+                    Выберите ответ, затем нажмите кнопку «Показать пояснение».
+                </p>
+            </header>
+
+            <div class="progress-panel">
+                <span class="progress-label">📋 Ваши ответы:</span>
+                <div class="dots-row">
+                    <span class="dot dot-1" data-num="1"></span>
+                    <span class="dot dot-2" data-num="2"></span>
+                    <span class="dot dot-3" data-num="3"></span>
+                    <span class="dot dot-4" data-num="4"></span>
+                    <span class="dot dot-5" data-num="5"></span>
+                    <span class="dot dot-6" data-num="6"></span>
+                </div>
+                <div class="dot-legend">
+                    <span><span class="legend-dot correct"></span> верно</span>
+                    <span><span class="legend-dot wrong"></span> ошибка</span>
+                    <span style="opacity:0.6;">⚪ без ответа</span>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+
+                <!-- Card 1 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">01</span>
+                        <p class="card-scenario">
+                            Компания планово заменила старые станки на более современные,
+                            снизив энергопотребление на&nbsp;10%. Проект претендует на звание климатического.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card1" id="card1-project" class="radio-project">
+                            <label for="card1-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card1" id="card1-fake" class="radio-fake">
+                            <label for="card1-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card1" class="reveal-checkbox">
+                        <label for="reveal-card1" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card1">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это пустышка.</strong>
+                            Плановая замена устаревшего оборудования — рутинная модернизация, а не климатический проект.
+                            Компания всё равно обновила бы станки. Без доказанной добавочности
+                            проект не пройдёт верификацию в российском углеродном реестре.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card1">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>Не совсем. На самом деле это пустышка.</strong>
+                            Хотя выбросы снизились, это рутинная модернизация без дополнительности.
+                            Компания сделала бы это и без климатического проекта. Именно принцип дополнительности —
+                            ключевой критерий.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">02</span>
+                        <p class="card-scenario">
+                            На землях, где последние 50 лет был лес, предлагается
+                            лесоразведение и зачёт полного объёма будущего поглощения CO₂.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card2" id="card2-project" class="radio-project">
+                            <label for="card2-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card2" id="card2-fake" class="radio-fake">
+                            <label for="card2-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card2" class="reveal-checkbox">
+                        <label for="reveal-card2" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card2">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это пустышка.</strong>
+                            Территория с лесной историей имеет высокий потенциал естественного
+                            восстановления. Лес вырастет и без участия человека.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card2">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>На самом деле это пустышка.</strong>
+                            Если лес рос на участке последние 50 лет,
+                            велика вероятность естественного возобновления. Климатический проект же предусматривает мероприятия, которые без участия человека не происходят.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">03</span>
+                        <p class="card-scenario">
+                            Сельхозпредприятие внедряет нулевую обработку почвы
+                            на участках, где раньше применялась глубокая вспашка, и оценивает прирост
+                            почвенного углерода по международной экспертной методике.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card3" id="card3-project" class="radio-project">
+                            <label for="card3-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card3" id="card3-fake" class="radio-fake">
+                            <label for="card3-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card3" class="reveal-checkbox">
+                        <label for="reveal-card3" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card3">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это климатический проект.</strong>
+                            Четкая смена практики, измеримый результат и использование экспертной методики —
+                            всё это соответствует критериям. Проект демонстрирует дополнительность
+                            и может быть верифицирован для выпуска углеродных единиц.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card3">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>На самом деле это настоящий проект.</strong>
+                            Здесь есть все необходимое: смена практики (дополнительность),
+                            количественная оценка эффекта и использование экспертной методики.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">04</span>
+                        <p class="card-scenario">
+                            Ветропарк, который уже работает 5 лет.
+                            Владелец хочет дополнительно зарегистрировать климатический проект и получать углеродные единицы.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card4" id="card4-project" class="radio-project">
+                            <label for="card4-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card4" id="card4-fake" class="radio-fake">
+                            <label for="card4-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card4" class="reveal-checkbox">
+                        <label for="reveal-card4" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card4">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это пустышка.</strong>
+                            Ветропарк уже экономически состоятелен без углеродного финансирования.
+                            Это прямое нарушение принципа дополнительности: проект должен нуждаться
+                            в доходах от углеродных единиц, чтобы состояться.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card4">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>Увы, это пустышка.</strong>
+                            Главный вопрос на дополнительность: «случился бы проект без углеродного
+                            финансирования?» Ветропарк и так уже работает. Ответ - «да». Значит, никакого климатического проекта нет.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">05</span>
+                        <p class="card-scenario">
+                            Проект по улавливанию и утилизации метана на действующем полигоне ТБО. Ранее на объекте газ просто выбрасывали в атмосферу.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card5" id="card5-project" class="radio-project">
+                            <label for="card5-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card5" id="card5-fake" class="radio-fake">
+                            <label for="card5-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card5" class="reveal-checkbox">
+                        <label for="reveal-card5" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card5">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это климатический проект.</strong>
+                            Классический пример дополнительности — улавливать метан вместо свободного выброса. Эффект измерим, методология отработана. К слову, одна единица метана равно 28 единицам CO₂. Представьте, насколько эффективен данный проект.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card5">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>На самом деле это настоящий проект.</strong>
+                            Переход от «ничего не делаем с метаном» к активному улавливанию —
+                            это явная дополнительность. Метан имеет мощный парниковый эффект, в 28 раз сильнее, чем у диоксида углерода.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="card">
+                    <div class="card-inner">
+                        <span class="card-number">06</span>
+                        <p class="card-scenario">
+                            Инициатива объявить крупный лесной массив особо охраняемой территорией и засчитать все поглощение CO₂ этим лесом как климатический проект. Дополнительные мероприятия не предусмотрены.
+                        </p>
+                        <div class="choices-row">
+                            <input type="radio" name="card6" id="card6-project" class="radio-project">
+                            <label for="card6-project" class="choice-label choice-label-project">✅ Проект</label>
+                            <input type="radio" name="card6" id="card6-fake" class="radio-fake">
+                            <label for="card6-fake" class="choice-label choice-label-fake">🚫 Пустышка</label>
+                        </div>
+                        <input type="checkbox" id="reveal-card6" class="reveal-checkbox">
+                        <label for="reveal-card6" class="reveal-btn">🔍 Показать пояснение</label>
+                        <div class="feedback feedback-correct feedback-correct-card6">
+                            <span class="feedback-icon">🎯</span>
+                            <strong>Верно! Это пустышка.</strong>
+                            Лес уже существовал и поглощал CO₂. Простое изменение статуса территории
+                            не создаёт дополнительного поглощения.
+                        </div>
+                        <div class="feedback feedback-incorrect feedback-incorrect-card6">
+                            <span class="feedback-icon">🤔</span>
+                            <strong>Это пустышка, а не климатический проект.</strong>
+                            Сохранение лесов — благородное дело, но без дополнительных мероприятий
+                            оно не увеличивает поглощение CO₂ сверх того, что уже происходит.
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /cards-grid -->
+
+            <div class="reset-section">
+                <a href="#" class="reset-btn" onclick="document.querySelectorAll('input[type=radio], input[type=checkbox].reveal-checkbox').forEach(r => r.checked = false); return false;">
+                    🔄 Сбросить все ответы
+                </a>
+            </div>
+
+            <div class="footer-note">
+                Тренажёр основан на критериях <strong>Климатической доктрины РФ</strong> (утв. Указом Президента от 26.10.2023).
+                <br>Подробнее — на <a href="http://www.kremlin.ru/acts/bank/49910" target="_blank" rel="noopener">сайте Президента РФ</a>
+            </div>
+
+        </div><!-- /.main-wrapper -->
+
+        <!-- Видимая ручка для ресайза -->
+        <div class="resizer-handle" aria-hidden="true"></div>
+    </div><!-- /.resizable-frame -->
+
+    <script>
+        // Кастомный ресайз-хэндлер (работает вместе с CSS resize:both; ограничивает размер)
+        (function() {
+            const frame = document.getElementById('app-resizer');
+            const handle = frame.querySelector('.resizer-handle');
+
+            const MAX_W = 700;
+            const MAX_H = 600;
+            const MIN_W = 320;
+            const MIN_H = 300;
+
+            let startX = 0, startY = 0, startW = 0, startH = 0, dragging = false;
+
+            const onMove = (clientX, clientY) => {
+                if (!dragging) return;
+                const dX = clientX - startX;
+                const dY = clientY - startY;
+
+                const nextW = Math.min(MAX_W, Math.max(MIN_W, startW + dX));
+                const nextH = Math.min(MAX_H, Math.max(MIN_H, startH + dY));
+
+                frame.style.width = nextW + 'px';
+                frame.style.height = nextH + 'px';
+            };
+
+            const mouseMove = (e) => onMove(e.clientX, e.clientY);
+            const mouseUp = () => {
+                dragging = false;
+                document.removeEventListener('mousemove', mouseMove);
+                document.removeEventListener('mouseup', mouseUp);
+            };
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startW = frame.offsetWidth;
+                startH = frame.offsetHeight;
+                document.addEventListener('mousemove', mouseMove);
+                document.addEventListener('mouseup', mouseUp);
+            });
+
+            // Touch support
+            const touchMove = (e) => {
+                if (!dragging) return;
+                const t = e.touches[0];
+                onMove(t.clientX, t.clientY);
+            };
+            const touchEnd = () => {
+                dragging = false;
+                document.removeEventListener('touchmove', touchMove);
+                document.removeEventListener('touchend', touchEnd);
+                document.removeEventListener('touchcancel', touchEnd);
+            };
+            handle.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                dragging = true;
+                startX = t.clientX;
+                startY = t.clientY;
+                startW = frame.offsetWidth;
+                startH = frame.offsetHeight;
+                document.addEventListener('touchmove', touchMove, { passive: false });
+                document.addEventListener('touchend', touchEnd);
+                document.addEventListener('touchcancel', touchEnd);
+            }, { passive: false });
+        })();
+    </script>
+</body>
+</html>
